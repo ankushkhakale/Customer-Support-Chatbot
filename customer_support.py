@@ -7,7 +7,7 @@ import requests
 
 
 DEFAULT_MODEL = os.getenv("CHATBOT_MODEL", "llama3")
-DEFAULT_ENDPOINT = os.getenv("CHATBOT_ENDPOINT", "http://localhost:1434/api/chat")
+DEFAULT_ENDPOINT = os.getenv("CHATBOT_ENDPOINT", "http://localhost:11434/api/chat")
 REQUEST_TIMEOUT = float(os.getenv("CHATBOT_TIMEOUT", 15))
 
 
@@ -69,8 +69,6 @@ demo = gr.ChatInterface(
     fn=generate_response,
     title="Customer Support Chatbot",
     description="Ask me anything! I am running locally using Ollama.",
-    theme=gr.themes.Soft(),
-    css=custom_css,
 )
 
 
