@@ -7,15 +7,34 @@ import requests
 
 
 DEFAULT_MODEL = os.getenv("CHATBOT_MODEL", "llama3")
-DEFAULT_ENDPOINT = os.getenv("CHATBOT_ENDPOINT", "http://localhost:1434/api/generate")
+DEFAULT_ENDPOINT = os.getenv("CHATBOT_ENDPOINT", "http://localhost:1434/api/chat")
 REQUEST_TIMEOUT = float(os.getenv("CHATBOT_TIMEOUT", 15))
 
 
+SYSTEM_PROMPT = """You are a helpful and professional customer support agent.
+Your goal is to assist users with their inquiries efficiently and politely.
+If you don't know the answer, admit it and offer to escalate the issue to a human agent.
+Always maintain a courteous tone."""
+
+
 def generate_response(message: str, history: List[List[str]]) -> str:
-    """Send the prompt to the model server and return the reply string."""
+    """Send the conversation history to the model server and return the reply."""
+    
+    # Convert Gradio history [[user, bot], ...] to Ollama messages format
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    
+    for user_msg, bot_msg in history:
+        if user_msg:
+            messages.append({"role": "user", "content": user_msg})
+        if bot_msg:
+            messages.append({"role": "assistant", "content": bot_msg})
+            
+    # Add the current message
+    messages.append({"role": "user", "content": message})
+
     payload: Dict[str, Any] = {
         "model": DEFAULT_MODEL,
-        "prompt": message,
+        "messages": messages,
         "stream": False,
     }
 
@@ -37,7 +56,9 @@ def generate_response(message: str, history: List[List[str]]) -> str:
     except ValueError:
         return "Error: invalid JSON from model endpoint."
 
-    return str(body.get("response", ""))
+    # In api/chat, the response is in body['message']['content']
+    message_obj = body.get("message", {})
+    return str(message_obj.get("content", ""))
 
 
 custom_css = """
