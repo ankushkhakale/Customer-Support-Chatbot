@@ -17,14 +17,26 @@ If you don't know the answer, admit it and offer to escalate the issue to a huma
 Always maintain a courteous tone."""
 
 
-def generate_response(message: str, history: List[Dict[str, str]]) -> str:
+def generate_response(message: str, history: List[Any]) -> str:
     """Send the conversation history to the model server and return the reply."""
     
     # Init messages with system prompt
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
-    # Add history (which is already in {"role": ..., "content": ...} format)
-    messages.extend(history)
+    # Robustly handle history
+    for item in history:
+        if isinstance(item, dict):
+            # Start with standard fields
+            msg = {"role": item.get("role"), "content": item.get("content")}
+            if msg["role"] and msg["content"]:
+                messages.append(msg)
+        elif isinstance(item, (list, tuple)) and len(item) == 2:
+            # Handle user/assistant tuple
+            user_msg, bot_msg = item
+            if user_msg:
+                messages.append({"role": "user", "content": user_msg})
+            if bot_msg:
+                messages.append({"role": "assistant", "content": bot_msg})
             
     # Add the current message
     messages.append({"role": "user", "content": message})
@@ -66,7 +78,6 @@ demo = gr.ChatInterface(
     fn=generate_response,
     title="Customer Support Chatbot",
     description="Ask me anything! I am running locally using Ollama.",
-    type="messages",
 )
 
 
