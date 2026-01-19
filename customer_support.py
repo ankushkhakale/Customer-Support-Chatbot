@@ -17,17 +17,14 @@ If you don't know the answer, admit it and offer to escalate the issue to a huma
 Always maintain a courteous tone."""
 
 
-def generate_response(message: str, history: List[List[str]]) -> str:
+def generate_response(message: str, history: List[Dict[str, str]]) -> str:
     """Send the conversation history to the model server and return the reply."""
     
-    # Convert Gradio history [[user, bot], ...] to Ollama messages format
+    # Init messages with system prompt
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
-    for user_msg, bot_msg in history:
-        if user_msg:
-            messages.append({"role": "user", "content": user_msg})
-        if bot_msg:
-            messages.append({"role": "assistant", "content": bot_msg})
+    # Add history (which is already in {"role": ..., "content": ...} format)
+    messages.extend(history)
             
     # Add the current message
     messages.append({"role": "user", "content": message})
@@ -69,6 +66,7 @@ demo = gr.ChatInterface(
     fn=generate_response,
     title="Customer Support Chatbot",
     description="Ask me anything! I am running locally using Ollama.",
+    type="messages",
 )
 
 
