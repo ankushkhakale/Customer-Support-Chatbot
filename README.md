@@ -63,6 +63,3 @@ python customer_support.py
 - Streaming is off by default (`"stream": false`); enable it if your backend supports it.
 - Errors from the model endpoint are returned in the chat to ease debugging.
 - Health probe is available at `/health` when running via FastAPI.
-
-## License
-MIT License. See [LICENSE](LICENSE).
